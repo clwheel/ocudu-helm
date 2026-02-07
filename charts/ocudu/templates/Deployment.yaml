@@ -1,0 +1,83 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocudu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocudu
+  template:
+    metadata:
+      labels:
+        app: ocudu
+    spec:
+      containers:
+      - command: ["gnb", "-c", "/config/gnb_config.yml"]
+        image: {{ .Values.image.ocudu.repository }}:{{ .Values.image.ocudu.tag }}
+        imagePullPolicy: Always
+        name: ocudu-gnb
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_NICE
+            - CAP_SYS_PTRACE
+        volumeMounts:
+        - mountPath: /tmp
+          name: gnb-storage
+        - mountPath: /config
+          name: gnb-config
+      volumes:
+      - name: gnb-storage
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: gnb-config
+        configMap:
+          name: gnb-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs
+  template:
+    metadata:
+      labels:
+        app: open5gs
+    spec:
+      containers:
+      - command: ["5gc", "-c", "/config/open5gs-5gc.yml"]
+        image: {{ .Values.image.open5gs_5gc.repository }}:{{ .Values.image.open5gs_5gc.tag }}
+        imagePullPolicy: Always
+        name: open5gs-5gc
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /data
+          name: 5gc-storage
+        - mountPath: /config
+          name: 5gc-config
+      volumes:
+      - name: 5gc-storage
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: 5gc-config
+        configMap:
+          name: 5gc-config
