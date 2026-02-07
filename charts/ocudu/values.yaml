@@ -1,0 +1,7 @@
+image:
+  ocudu:
+    repository: quay.io/rh_ee_chwheele/ocudu
+    tag: 2026.02.04
+  open5gs_5gc:
+    repository: quay.io/rh_ee_chwheele/open5gs_5gc
+    tag: 2026.02.04

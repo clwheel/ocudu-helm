@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocudu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - command:
+        - gnb
+        - -c
+        - /config/gnb_config.yml
+        image: {{ .Values.image.ocudu.repository }}:{{ .Values.image.ocudu.tag }}
+        imagePullPolicy: Always
+        name: ocudu_gnb
+        resources:
+          requests:
+            cpu: 1
+            memory: 1Gi
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_NICE
+            - CAP_SYS_PTRACE
+        voumeMounts:
+        - mountPath: /tmp
+          name: gnb-storage
+        - mountPath: /config
+          name: gnb_config
+      volumes:
+      - name: gnb-storage
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: config
+        configMap:
+          name: gnb_config
